@@ -1,0 +1,23 @@
+[Unit]
+Description=AWP25 Reflector Monitor
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=awp25-monitor
+Group=awp25-monitor
+WorkingDirectory=/opt/awp25-monitor
+EnvironmentFile=/etc/awp25-monitor.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/pnpm start
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/awp25-monitor/.next/cache
+
+[Install]
+WantedBy=multi-user.target
