@@ -68,19 +68,12 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
      sudo useradd --system --user-group --home /opt/awp25-monitor --shell /usr/sbin/nologin awp25-monitor
    ```
 
-4. Grant `awp25-monitor` read-only access to the P25Reflector log directory. First inspect a current log to find its owner, group, and permissions:
+4. Grant `awp25-monitor` read-only access to the P25Reflector log directory.
+
 
    ```bash
-   stat -c '%A %U %G %n' /actual/path/to/P25Reflector-current.log
+   sudo usermod -aG mmdvm awp25-monitor
    ```
-
-   If the displayed group already has read access and is not `root`, add the collector to that actual group:
-
-   ```bash
-   sudo usermod -aG actual-log-group awp25-monitor
-   ```
-
-   The path and group names above are examples and must be replaced with values from this server. If the logs are group-owned by `root`, use a dedicated read-only group or filesystem ACL instead of adding the service account to the `root` group.
 
 5. Install and edit the configuration:
 
