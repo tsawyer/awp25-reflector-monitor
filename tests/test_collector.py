@@ -62,6 +62,35 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(current["stats"]["nodeCount"], 1)
         self.assertEqual(expired["stats"]["nodeCount"], 0)
 
+    def test_tracks_real_reflector_adds_heartbeats_and_removals(self) -> None:
+        state = ReflectorState()
+        now = datetime.now().astimezone()
+        config = settings(Path("/tmp/status.json"))
+        state.log_mtime = now.timestamp()
+
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.044 Adding K6JPS      (192.0.2.10:6820)",
+            now.timestamp(),
+        )
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.374 Adding WD6AWP     (198.51.100.20:6820)",
+            now.timestamp(),
+        )
+        state.process_line(
+            f"D: {now:%Y-%m-%d %H:%M:%S}.044 0000:  F0 4B 36 4A 50 53 20 20 20 20 20  *.K6JPS     *",
+            now.timestamp() + config.node_timeout,
+        )
+
+        current = state.snapshot(config, now.timestamp() + config.node_timeout + 1)
+        self.assertEqual([node["name"] for node in current["nodes"]], ["K6JPS"])
+
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.500 Removing K6JPS",
+            now.timestamp() + config.node_timeout + 2,
+        )
+        removed = state.snapshot(config, now.timestamp() + config.node_timeout + 2)
+        self.assertEqual(removed["nodes"], [])
+
     def test_publishes_complete_json_atomically(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "status.json"

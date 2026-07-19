@@ -95,12 +95,24 @@ class ReflectorState:
         lowered = message.lower()
         changed = False
 
-        if call and re.search(r"added|connected|link(?:ed)? from|poll from", lowered):
+        is_node_heartbeat = bool(re.search(r"\b0000:\s+F0\b", message, re.IGNORECASE))
+
+        if call and (
+            re.search(r"add(?:ed|ing)|connected|link(?:ed)? from|poll from", lowered)
+            or is_node_heartbeat
+        ):
             self.nodes[call] = NodeSeen(last_seen=now)
             changed = True
-        if call and re.search(r"removed|disconnected|unlink", lowered):
+        if call and re.search(r"remov(?:ed|ing)|disconnected|unlink", lowered):
             self.nodes.pop(call, None)
             changed = True
+
+        if re.search(r"starting p25reflector|no repeaters linked", lowered):
+            if self.nodes or self.active_call:
+                changed = True
+            self.nodes.clear()
+            self.active_call = None
+            self.active_started = None
 
         is_end = bool(re.search(r"ended|end of.*transmission|total frames", lowered))
         is_start = (
