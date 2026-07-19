@@ -92,14 +92,7 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
    sudo systemctl enable --now awp25-collector
    ```
 
-8. Hand port 80 from the retired Lighttpd service to Apache:
-
-   ```bash
-   sudo systemctl disable --now lighttpd
-   sudo a2enmod alias headers
-   ```
-
-9. Install the Apache virtual host, disable its placeholder site, and start Apache:
+8. Install the Apache virtual host, disable its placeholder site, and start Apache:
 
    ```bash
    sudo install -m 0644 deploy/apache.conf /etc/apache2/sites-available/awp25-monitor.conf
