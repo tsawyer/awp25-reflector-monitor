@@ -77,24 +77,19 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
 
 5. Install and edit the configuration:
 
+   Likely only `P25_LOG_DIR=/var/log/...` needs attention. 
+
    ```bash
    sudo install -m 0644 .env.example /etc/awp25-monitor.env
    sudo editor /etc/awp25-monitor.env
    ```
 
-6. Install the collector service:
+7. Install the collector service:
 
    ```bash
    sudo install -m 0644 deploy/awp25-collector.service /etc/systemd/system/
    sudo systemctl daemon-reload
    sudo systemctl enable --now awp25-collector
-   ```
-
-7. Hand port 80 from the retired Lighttpd service to Apache:
-
-   ```bash
-   sudo systemctl disable --now lighttpd
-   sudo a2enmod alias headers
    ```
 
 8. Install the Apache virtual host, disable its placeholder site, and start Apache:
