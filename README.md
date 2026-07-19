@@ -45,26 +45,42 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
    sudo apt install python3 apache2
    ```
 
-2. Put the repository at `/opt/awp25-monitor` and create the service account:
+2. From the repository checkout, install only the production runtime files under `/opt`:
 
    ```bash
-   sudo useradd --system --home /opt/awp25-monitor --shell /usr/sbin/nologin awp25-monitor
+   sudo install -d -o root -g root -m 0755 \
+     /opt/awp25-monitor/collector \
+     /opt/awp25-monitor/web
+
+   sudo install -o root -g root -m 0644 \
+     collector/collector.py \
+     /opt/awp25-monitor/collector/
+
+   sudo install -o root -g root -m 0644 \
+     web/index.html web/styles.css web/monitor.js web/favicon.svg \
+     /opt/awp25-monitor/web/
    ```
 
-3. Grant `awp25-monitor` read-only access to the P25Reflector log directory. Usually this means adding it to the group that owns those logs:
+3. Create the dedicated service account:
+
+   ```bash
+   sudo useradd --system --user-group --home /opt/awp25-monitor --shell /usr/sbin/nologin awp25-monitor
+   ```
+
+4. Grant `awp25-monitor` read-only access to the P25Reflector log directory. Usually this means adding it to the group that owns those logs:
 
    ```bash
    sudo usermod -aG REFLECTOR_LOG_GROUP awp25-monitor
    ```
 
-4. Install and edit the configuration:
+5. Install and edit the configuration:
 
    ```bash
    sudo install -m 0644 .env.example /etc/awp25-monitor.env
    sudo editor /etc/awp25-monitor.env
    ```
 
-5. Install the collector service:
+6. Install the collector service:
 
    ```bash
    sudo install -m 0644 deploy/awp25-collector.service /etc/systemd/system/
@@ -72,14 +88,14 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
    sudo systemctl enable --now awp25-collector
    ```
 
-6. Hand port 80 from the retired Lighttpd service to Apache:
+7. Hand port 80 from the retired Lighttpd service to Apache:
 
    ```bash
    sudo systemctl disable --now lighttpd
    sudo a2enmod alias headers
    ```
 
-7. Install the Apache virtual host, disable its placeholder site, and start Apache:
+8. Install the Apache virtual host, disable its placeholder site, and start Apache:
 
    ```bash
    sudo install -m 0644 deploy/apache.conf /etc/apache2/sites-available/awp25-monitor.conf
