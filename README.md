@@ -4,16 +4,16 @@ A lightweight, near-real-time public monitor for a P25Reflector server on Debian
 
 The application has no third-party runtime dependencies:
 
-- nginx serves the static dashboard and the latest JSON snapshot.
+- Apache serves the static dashboard and the latest JSON snapshot.
 - A Python 3 collector reads the three newest **P25Reflector application logs**, then follows the active file and processes each new line once.
 - Browsers request the small sanitized snapshot every second.
 
-The collector does not read nginx or Apache logs and never publishes client IP addresses or raw log lines.
+The collector does not read Apache logs and never publishes client IP addresses or raw log lines.
 
 ## Architecture
 
 ```text
-P25Reflector*.log → collector.py → status.json → nginx → browsers
+P25Reflector*.log → collector.py → status.json → Apache → browsers
                          once          small       many
 ```
 
@@ -38,11 +38,12 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
 
 ## Debian 12 installation
 
-1. Install the only required packages:
+1. Install Python 3 if it is not already present, and enable Apache's standard headers module:
 
    ```bash
    sudo apt update
-   sudo apt install nginx python3
+   sudo apt install python3
+   sudo a2enmod headers
    ```
 
 2. Put the repository at `/opt/awp25-monitor` and create the service account:
@@ -72,13 +73,13 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
    sudo systemctl enable --now awp25-collector
    ```
 
-6. Adapt `server_name` in `deploy/nginx.conf`, install it, and reload nginx:
+6. Set `ServerName` in `deploy/apache.conf`, install the virtual host, and reload Apache:
 
    ```bash
-   sudo install -m 0644 deploy/nginx.conf /etc/nginx/sites-available/awp25-monitor
-   sudo ln -s /etc/nginx/sites-available/awp25-monitor /etc/nginx/sites-enabled/awp25-monitor
-   sudo nginx -t
-   sudo systemctl reload nginx
+   sudo install -m 0644 deploy/apache.conf /etc/apache2/sites-available/awp25-monitor.conf
+   sudo a2ensite awp25-monitor.conf
+   sudo apache2ctl configtest
+   sudo systemctl reload apache2
    ```
 
 Add TLS using the server's normal certificate workflow before public launch.
@@ -91,4 +92,4 @@ journalctl -u awp25-collector -f
 curl -s http://127.0.0.1/status.json
 ```
 
-The collector never rotates, renames, or deletes logs. At startup it reads only the three most recently modified matching files, oldest-to-newest, then follows the newest one. It detects a new filename, inode replacement, or in-place truncation after your own rotation and resumes at the correct position. JSON publication uses an atomic rename, ensuring nginx never serves a partially written document.
+The collector never rotates, renames, or deletes logs. At startup it reads only the three most recently modified matching files, oldest-to-newest, then follows the newest one. It detects a new filename, inode replacement, or in-place truncation after your own rotation and resumes at the correct position. JSON publication uses an atomic rename, ensuring Apache never serves a partially written document.
