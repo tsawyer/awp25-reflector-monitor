@@ -1,35 +1,94 @@
 # AWP25 Reflector Monitor
 
-Public, read-only P25 reflector activity and health dashboard for Debian 12. The server reads the current `P25Reflector*.log` file, keeps IP addresses private, and exposes a small sanitized status endpoint to the browser.
+A lightweight, near-real-time public monitor for a P25Reflector server on Debian 12.
 
-## Local development
+The application has no third-party runtime dependencies:
 
-Requires Node.js 22+ and pnpm.
+- nginx serves the static dashboard and the latest JSON snapshot.
+- A Python 3 collector reads the three newest **P25Reflector application logs**, then follows the active file and processes each new line once.
+- Browsers request the small sanitized snapshot every second.
 
-```bash
-corepack enable
-pnpm install
-pnpm dev
+The collector does not read nginx or Apache logs and never publishes client IP addresses or raw log lines.
+
+## Architecture
+
+```text
+P25Reflector*.log → collector.py → status.json → nginx → browsers
+                         once          small       many
 ```
 
-Development automatically uses representative demo telemetry when no reflector log is available. Copy `.env.example` to `.env.local` to override the reflector name, talkgroup, NAC, or log directory.
+Typical display latency is one to two seconds. Visitor count does not increase reflector-log parsing work.
 
-## Debian 12 deployment
+## Test
 
-1. Install Node.js 22, enable Corepack, and install nginx.
-2. Copy the project to `/opt/awp25-monitor`, then run `pnpm install --frozen-lockfile` and `pnpm build`.
-3. Create the locked-down service account: `sudo useradd --system --home /opt/awp25-monitor --shell /usr/sbin/nologin awp25-monitor`.
-4. Copy `.env.example` to `/etc/awp25-monitor.env` and set the production paths.
-5. Grant the service account read-only access to the reflector logs, normally by adding it to the reflector log group. Make `/opt/awp25-monitor/.next/cache` writable by the service account.
-6. Install `deploy/awp25-monitor.service` in `/etc/systemd/system/`, then enable and start it.
-7. Adapt `deploy/nginx.conf` with the public hostname and install it in `/etc/nginx/sites-enabled/`.
+Debian 12's standard Python 3 is sufficient:
 
-The application listens only on `127.0.0.1:3000`; nginx is the public edge. Add TLS with the site's normal certificate workflow before exposing it publicly.
+```bash
+python3 -m unittest discover -s tests -p 'test_*.py'
+python3 -m py_compile collector/collector.py
+```
 
-## Data inputs
+To inspect the static interface locally, run `python3 -m http.server 8080 --directory web`. It will show an offline state until a collector publishes `web/status.json`.
 
-- `P25_LOG_DIR`: directory containing rotating `P25Reflector*.log` files.
-- `P25_STATUS_FILE`: optional JSON snapshot path. When set, this takes precedence over logs and is useful if an existing collector already produces clean telemetry.
-- `P25_DEMO_MODE=1`: explicitly enables representative demo telemetry in production. Leave unset on the live server.
+## Configuration
 
-The parser recognizes common P25Reflector connection, disconnection, transmission-start, and transmission-end log lines. A JSON fixture and parser tests document the normalized public response shape.
+Copy `.env.example` to `/etc/awp25-monitor.env`. Most importantly, set `P25_LOG_DIR` to the directory containing the reflector application's `P25Reflector*.log` files. The filename pattern is separately configurable with `P25_LOG_PATTERN`.
+
+Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes.example.json`. Unknown nodes are displayed using the callsign or numeric gateway ID found in the log.
+
+## Debian 12 installation
+
+1. Install the only required packages:
+
+   ```bash
+   sudo apt update
+   sudo apt install nginx python3
+   ```
+
+2. Put the repository at `/opt/awp25-monitor` and create the service account:
+
+   ```bash
+   sudo useradd --system --home /opt/awp25-monitor --shell /usr/sbin/nologin awp25-monitor
+   ```
+
+3. Grant `awp25-monitor` read-only access to the P25Reflector log directory. Usually this means adding it to the group that owns those logs:
+
+   ```bash
+   sudo usermod -aG REFLECTOR_LOG_GROUP awp25-monitor
+   ```
+
+4. Install and edit the configuration:
+
+   ```bash
+   sudo install -m 0644 .env.example /etc/awp25-monitor.env
+   sudo editor /etc/awp25-monitor.env
+   ```
+
+5. Install the collector service:
+
+   ```bash
+   sudo install -m 0644 deploy/awp25-collector.service /etc/systemd/system/
+   sudo systemctl daemon-reload
+   sudo systemctl enable --now awp25-collector
+   ```
+
+6. Adapt `server_name` in `deploy/nginx.conf`, install it, and reload nginx:
+
+   ```bash
+   sudo install -m 0644 deploy/nginx.conf /etc/nginx/sites-available/awp25-monitor
+   sudo ln -s /etc/nginx/sites-available/awp25-monitor /etc/nginx/sites-enabled/awp25-monitor
+   sudo nginx -t
+   sudo systemctl reload nginx
+   ```
+
+Add TLS using the server's normal certificate workflow before public launch.
+
+## Operations
+
+```bash
+systemctl status awp25-collector
+journalctl -u awp25-collector -f
+curl -s http://127.0.0.1/status.json
+```
+
+The collector never rotates, renames, or deletes logs. At startup it reads only the three most recently modified matching files, oldest-to-newest, then follows the newest one. It detects a new filename, inode replacement, or in-place truncation after your own rotation and resumes at the correct position. JSON publication uses an atomic rename, ensuring nginx never serves a partially written document.

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Near-real-time activity and network health for the AWP25 P25 reflector.">
+    <title>AWP25 Reflector Monitor</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="/styles.css">
+    <script src="/monitor.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <header class="site-header">
+        <a class="brand" href="#top" aria-label="AWP25 home">
+          <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span><b>AWP25</b><small>REFLECTOR MONITOR</small></span>
+        </a>
+        <div class="header-status">
+          <span class="status-dot" id="header-dot"></span>
+          <span><b id="header-status">Connecting to reflector</b><small id="updated-label">Waiting for telemetry</small></span>
+        </div>
+      </header>
+
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">P25 DIGITAL VOICE NETWORK</p>
+          <h1>On the air.<br><em>Across the West.</em></h1>
+          <p class="lede">Live activity and health for the AWP25 reflector network, connecting repeaters, hotspots, and operators across Southern California.</p>
+        </div>
+
+        <div class="on-air-card">
+          <div class="on-air-top">
+            <span class="live-chip" id="live-chip"><i></i> CONNECTING</span>
+            <span class="mono">TG <span id="talkgroup">10225</span></span>
+          </div>
+          <div class="active-call">
+            <div class="avatar" id="active-avatar">A</div>
+            <div><small id="active-label">REFLECTOR STANDBY</small><strong id="active-call">AWP25</strong><span id="active-source">Listening for the next call</span></div>
+          </div>
+          <div class="waveform" id="waveform" aria-label="Recent network activity visualization"></div>
+          <div class="call-meta"><span><span id="active-duration">00:00</span> elapsed</span><span>P25 · NAC <span id="nac">927</span></span></div>
+        </div>
+      </section>
+
+      <section class="stat-grid" aria-label="Network statistics">
+        <article><small>REFLECTOR</small><strong id="reflector-state">Connecting</strong><span><i class="good-dot" id="reflector-dot"></i> <span id="heartbeat-label">Waiting for heartbeat</span></span></article>
+        <article><small>CONNECTED NODES</small><strong id="node-total">—</strong><span>Repeaters and hotspots</span></article>
+        <article><small>KEY-UPS TODAY</small><strong id="keyups-total">—</strong><span>Since local midnight</span></article>
+        <article><small>NETWORK TIME</small><strong id="airtime-total">00:00:00</strong><span>Total airtime today</span></article>
+      </section>
+
+      <section class="content-grid">
+        <article class="panel activity-panel">
+          <div class="panel-heading">
+            <div><p class="eyebrow">TRAFFIC</p><h2>Recent activity</h2></div>
+            <label class="search"><span aria-hidden="true">⌕</span><input id="activity-search" placeholder="Search callsign" aria-label="Search activity by callsign"></label>
+          </div>
+          <div class="activity-list" id="activity-list" aria-live="polite">
+            <div class="empty-state">Waiting for recent transmissions.</div>
+          </div>
+          <button class="text-button" id="clear-search" type="button">Clear activity filter <span>→</span></button>
+        </article>
+
+        <aside class="panel nodes-panel">
+          <div class="panel-heading"><div><p class="eyebrow">NETWORK</p><h2>Connected nodes</h2></div><span class="node-count" id="node-count">0 ONLINE</span></div>
+          <div class="nodes-list" id="nodes-list"><div class="empty-state compact">Waiting for node telemetry.</div></div>
+          <div class="text-button static-label">Near-real-time link status <span>●</span></div>
+        </aside>
+      </section>
+
+      <section class="panel usage-panel">
+        <div class="panel-heading">
+          <div><p class="eyebrow">UTILIZATION</p><h2>Network activity</h2></div>
+          <span class="node-count">1 SEC REFRESH</span>
+        </div>
+        <div class="chart-wrap">
+          <div class="axis"><span>100</span><span>75</span><span>50</span><span>25</span><span>0</span></div>
+          <div class="bar-chart" id="bar-chart"></div>
+        </div>
+        <div class="chart-labels"><span>12 AM</span><span>6 AM</span><span>12 PM</span><span>6 PM</span><span>NOW</span></div>
+      </section>
+
+      <footer>
+        <div class="brand footer-brand"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span><span><b>AWP25</b><small>REFLECTOR MONITOR</small></span></div>
+        <p>Keeping Southern California connected.</p>
+        <nav aria-label="Footer links"><a href="#top">Live status</a><a href="#activity-list">Activity</a><a href="#nodes-list">Nodes</a></nav>
+        <span class="footer-note">P25 Reflector · WD6AWP</span>
+      </footer>
+    </main>
+  </body>
+</html>
