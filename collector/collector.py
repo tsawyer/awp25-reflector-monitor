@@ -237,7 +237,7 @@ class Settings:
             poll_interval=float(os.environ.get("P25_POLL_INTERVAL", "0.2")),
             publish_interval=float(os.environ.get("P25_PUBLISH_INTERVAL", "1.0")),
             online_timeout=float(os.environ.get("P25_ONLINE_TIMEOUT", "300")),
-            node_timeout=float(os.environ.get("P25_NODE_TIMEOUT", "180")),
+            node_timeout=float(os.environ.get("P25_NODE_TIMEOUT", "20")),
             bootstrap_bytes=int(os.environ.get("P25_BOOTSTRAP_BYTES", str(16 * 1024 * 1024))),
             log_history=max(1, int(os.environ.get("P25_LOG_HISTORY", "3"))),
         )
