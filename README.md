@@ -38,12 +38,11 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
 
 ## Debian 12 installation
 
-1. Install Python 3 if it is not already present, and enable Apache's standard headers module:
+1. Install Python 3 and Apache if they are not already present:
 
    ```bash
    sudo apt update
-   sudo apt install python3
-   sudo a2enmod headers
+   sudo apt install python3 apache2
    ```
 
 2. Put the repository at `/opt/awp25-monitor` and create the service account:
@@ -73,16 +72,24 @@ Optional node labels can be provided through `P25_NODES_FILE`; see `deploy/nodes
    sudo systemctl enable --now awp25-collector
    ```
 
-6. Set `ServerName` in `deploy/apache.conf`, install the virtual host, and reload Apache:
+6. Hand port 80 from the retired Lighttpd service to Apache:
+
+   ```bash
+   sudo systemctl disable --now lighttpd
+   sudo a2enmod alias headers
+   ```
+
+7. Install the Apache virtual host, disable its placeholder site, and start Apache:
 
    ```bash
    sudo install -m 0644 deploy/apache.conf /etc/apache2/sites-available/awp25-monitor.conf
    sudo a2ensite awp25-monitor.conf
+   sudo a2dissite 000-default.conf
    sudo apache2ctl configtest
-   sudo systemctl reload apache2
+   sudo systemctl enable --now apache2
    ```
 
-Add TLS using the server's normal certificate workflow before public launch.
+Set `ServerName` in `deploy/apache.conf` before installing it if the monitor has a DNS name. The dashboard will be available at `http://YOUR-SERVER/`. Add TLS using the server's normal certificate workflow before public launch.
 
 ## Operations
 

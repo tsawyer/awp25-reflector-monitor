@@ -156,7 +156,7 @@ function render(status) {
 
 async function poll() {
   try {
-    const response = await fetch(`/status.json?t=${Date.now()}`, { cache: "no-store" });
+    const response = await fetch(`status.json?t=${Date.now()}`, { cache: "no-store" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const status = await response.json();
     if (!status || typeof status !== "object" || !status.stats) throw new Error("Invalid status document");
