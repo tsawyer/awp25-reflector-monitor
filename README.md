@@ -19,6 +19,8 @@ P25Reflector*.log → collector.py → status.json → Apache → browsers
 
 Typical display latency is one to two seconds. Visitor count does not increase reflector-log parsing work.
 
+P25Reflector log timestamps, daily totals, and utilization bins are interpreted in UTC, matching the reflector's UTC log-file rollover.
+
 ## Test
 
 Debian 12's standard Python 3 is sufficient:

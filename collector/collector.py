@@ -12,7 +12,7 @@ import sys
 import time
 from collections import deque
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -47,11 +47,12 @@ def callsign_from(message: str) -> str | None:
 def parse_timestamp(line: str, fallback: datetime | None = None) -> tuple[datetime, str]:
     match = TIMESTAMP_RE.search(line)
     if not match:
-        return fallback or datetime.now().astimezone(), line
+        value = fallback or datetime.now(timezone.utc)
+        return value.astimezone(timezone.utc), line
     try:
-        parsed = datetime.fromisoformat(f"{match.group(1)}T{match.group(2)}").astimezone()
+        parsed = datetime.fromisoformat(f"{match.group(1)}T{match.group(2)}").replace(tzinfo=timezone.utc)
     except ValueError:
-        parsed = fallback or datetime.now().astimezone()
+        parsed = (fallback or datetime.now(timezone.utc)).astimezone(timezone.utc)
     return parsed, line[match.end():].strip()
 
 
@@ -79,7 +80,7 @@ class ReflectorState:
         self.keyups_today = 0
         self.airtime_seconds = 0.0
         self.utilization_counts = [0] * 48
-        self.day = datetime.now().astimezone().date()
+        self.day = datetime.now(timezone.utc).date()
         self.log_mtime = 0.0
         self.configured = True
 
@@ -177,7 +178,7 @@ class ReflectorState:
 
     def snapshot(self, settings: "Settings", now: float | None = None) -> dict[str, Any]:
         timestamp = now or time.time()
-        self.reset_day_if_needed(datetime.fromtimestamp(timestamp).astimezone())
+        self.reset_day_if_needed(datetime.fromtimestamp(timestamp, timezone.utc))
         expired = [call for call, seen in self.nodes.items() if timestamp - seen.last_seen > settings.node_timeout]
         for call in expired:
             self.nodes.pop(call, None)

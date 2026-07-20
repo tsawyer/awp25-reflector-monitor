@@ -2,7 +2,7 @@ import json
 import os
 import tempfile
 import unittest
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 from collector.collector import ReflectorState, Settings, atomic_write_json, recent_logs
@@ -117,6 +117,20 @@ class CollectorTests(unittest.TestCase):
         )
         second = state.snapshot(config, now.timestamp() + 4)
         self.assertEqual([node["name"] for node in second["nodes"]], ["WD6AWP"])
+
+    def test_daily_utilization_follows_utc_log_rollover(self) -> None:
+        state = ReflectorState()
+        rollover = datetime(2026, 7, 20, 0, 1, tzinfo=timezone.utc)
+        config = settings(Path("/tmp/status.json"))
+
+        state.process_line(
+            "M: 2026-07-20 00:01:00 Transmission from WD6AWP at WD6AWP to TG 10253",
+            rollover.timestamp(),
+        )
+        snapshot = state.snapshot(config, rollover.timestamp() + 30)
+
+        self.assertEqual(snapshot["stats"]["keyupsToday"], 1)
+        self.assertGreater(snapshot["utilization"][0], 0)
 
     def test_publishes_complete_json_atomically(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
