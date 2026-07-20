@@ -131,15 +131,19 @@ function renderBars() {
 function render(status) {
   currentStatus = status;
   const online = Boolean(status.online);
+  const reflectorName = String(status.reflectorName || "Reflector");
   setOnline(online, status.configured !== false);
+  setText("reflector-name-copy", reflectorName);
+  byId("brand-home").setAttribute("aria-label", `${reflectorName} home`);
+  document.title = `${reflectorName} · MMDVM P25 Reflector Monitor`;
   setText("updated-label", status.configured === false ? "Check collector configuration" : formatUpdated(status.updatedAt));
   setText("heartbeat-label", online ? "Live heartbeat" : "Heartbeat stale");
   setText("talkgroup", status.talkgroup || "—");
 
   const call = status.activeCall;
-  setText("active-avatar", call?.call?.slice(0, 1) || "A");
+  setText("active-avatar", call?.call?.slice(0, 1) || reflectorName.slice(0, 1));
   setText("active-label", call ? "NOW TRANSMITTING" : "REFLECTOR STANDBY");
-  setText("active-call", call?.call || status.reflectorName || "AWP25");
+  setText("active-call", call?.call || reflectorName);
   setText("active-source", call ? `${call.name || "Operator"} · ${call.source || "Network"}` : "Listening for the next call");
   setText("active-duration", call?.duration || "00:00");
 
