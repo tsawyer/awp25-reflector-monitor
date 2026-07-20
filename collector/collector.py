@@ -21,6 +21,10 @@ TIMESTAMP_RE = re.compile(r"(?:[IEMD]:\s*)?(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2}:\
 CALLSIGN_RE = re.compile(r"\b([A-Z]{1,2}\d[A-Z0-9]{1,4}(?:-[A-Z0-9]{1,2})?)\b")
 NUMERIC_ID_RE = re.compile(r"(?:from|adding|removing|gateway)\s+(\d{4,9})\b", re.IGNORECASE)
 DURATION_RE = re.compile(r"(\d+(?:\.\d+)?)\s*(?:seconds?|secs?)", re.IGNORECASE)
+LINKED_REPEATER_RE = re.compile(
+    r"^(?:\.\d+)?\s+([A-Z]{1,2}\d[A-Z0-9]{1,4}(?:-[A-Z0-9]{1,2})?)\s*:\s+\S+:\d+\s+\d+/\d+\s*$",
+    re.IGNORECASE,
+)
 
 
 def iso_now() -> str:
@@ -94,10 +98,21 @@ class ReflectorState:
         call = callsign_from(message)
         lowered = message.lower()
         changed = False
+        linked_repeater = LINKED_REPEATER_RE.match(message)
+
+        if "currently linked repeaters:" in lowered:
+            if self.nodes:
+                changed = True
+            self.nodes.clear()
+
+        if linked_repeater:
+            call = linked_repeater.group(1).upper()
+            self.nodes[call] = NodeSeen(last_seen=now)
+            changed = True
 
         is_node_heartbeat = bool(re.search(r"\b0000:\s+F0\b", message, re.IGNORECASE))
 
-        if call and (
+        if call and not linked_repeater and (
             re.search(r"add(?:ed|ing)|connected|link(?:ed)? from|poll from", lowered)
             or is_node_heartbeat
         ):
@@ -237,7 +252,7 @@ class Settings:
             poll_interval=float(os.environ.get("P25_POLL_INTERVAL", "0.2")),
             publish_interval=float(os.environ.get("P25_PUBLISH_INTERVAL", "1.0")),
             online_timeout=float(os.environ.get("P25_ONLINE_TIMEOUT", "300")),
-            node_timeout=float(os.environ.get("P25_NODE_TIMEOUT", "20")),
+            node_timeout=float(os.environ.get("P25_NODE_TIMEOUT", "370")),
             bootstrap_bytes=int(os.environ.get("P25_BOOTSTRAP_BYTES", str(16 * 1024 * 1024))),
             log_history=max(1, int(os.environ.get("P25_LOG_HISTORY", "3"))),
         )

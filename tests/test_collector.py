@@ -91,6 +91,33 @@ class CollectorTests(unittest.TestCase):
         removed = state.snapshot(config, now.timestamp() + config.node_timeout + 2)
         self.assertEqual(removed["nodes"], [])
 
+    def test_linked_repeater_summary_replaces_previous_nodes(self) -> None:
+        state = ReflectorState()
+        now = datetime.now().astimezone()
+        config = settings(Path("/tmp/status.json"))
+
+        state.process_line(f"M: {now:%Y-%m-%d %H:%M:%S}.000 Adding OLDNODE", now.timestamp())
+        state.process_line(f"M: {now:%Y-%m-%d %H:%M:%S}.946 Currently linked repeaters:", now.timestamp() + 1)
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.946     WD6AWP    : 192.0.2.10:6820 3/120",
+            now.timestamp() + 1,
+        )
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.946     K6JPS     : 198.51.100.20:6820 2/120",
+            now.timestamp() + 1,
+        )
+        first = state.snapshot(config, now.timestamp() + 2)
+        self.assertEqual({node["name"] for node in first["nodes"]}, {"WD6AWP", "K6JPS"})
+        self.assertNotIn("192.0.2.10", json.dumps(first))
+
+        state.process_line(f"M: {now:%Y-%m-%d %H:%M:%S}.948 Currently linked repeaters:", now.timestamp() + 3)
+        state.process_line(
+            f"M: {now:%Y-%m-%d %H:%M:%S}.948     WD6AWP    : 192.0.2.10:6820 3/120",
+            now.timestamp() + 3,
+        )
+        second = state.snapshot(config, now.timestamp() + 4)
+        self.assertEqual([node["name"] for node in second["nodes"]], ["WD6AWP"])
+
     def test_publishes_complete_json_atomically(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "status.json"

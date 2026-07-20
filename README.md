@@ -114,4 +114,4 @@ curl -s http://127.0.0.1/status.json
 
 The collector never rotates, renames, or deletes logs. At startup it reads only the three most recently modified matching files, oldest-to-newest, then follows the newest one. It detects a new filename, inode replacement, or in-place truncation after your own rotation and resumes at the correct position. JSON publication uses an atomic rename, ensuring Apache never serves a partially written document.
 
-Connected nodes refresh from the reflector's approximately five-second heartbeat records. A node disappears after 20 seconds without a heartbeat by default (about four missed intervals); adjust `P25_NODE_TIMEOUT` in `/etc/awp25-monitor.env` if needed.
+Connected nodes refresh from heartbeat records and the reflector's authoritative `Currently linked repeaters` summary. Each new summary replaces the previous list, so an omitted node disappears immediately. A 370-second fallback timeout removes nodes if summaries stop for roughly three reporting intervals; adjust `P25_NODE_TIMEOUT` in `/etc/awp25-monitor.env` if needed.
