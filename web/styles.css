@@ -104,7 +104,7 @@ main { min-height: 100vh; overflow: hidden; }
 .bar-chart i:nth-child(5n), .bar-chart i:nth-child(7n) { background: #65783b; }
 .chart-labels { padding: 10px 28px 23px 70px; display: flex; justify-content: space-between; color: #9ca19e; font: 8px "SFMono-Regular", Consolas, "Liberation Mono", monospace; }
 
-footer { min-height: 142px; padding: 32px 5vw; display: grid; grid-template-columns: auto 1fr auto auto; gap: 38px; align-items: center; color: #b9c2bb; background: #1d2b25; }
+footer { min-height: 142px; padding: 32px 5vw; display: grid; grid-template-columns: auto 1fr auto; gap: 38px; align-items: center; color: #b9c2bb; background: #1d2b25; }
 .footer-brand b { color: #eef1ed; }.footer-brand small { color: #9ca79f; }
 footer p { font-family: Georgia, serif; font-style: italic; font-size: 13px; }
 footer nav { display: flex; gap: 25px; font-size: 10px; } footer a:hover { color: var(--lime); }
