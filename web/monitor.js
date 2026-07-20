@@ -60,7 +60,7 @@ function renderActivity() {
     return;
   }
 
-  rows.slice(0, 30).forEach((item) => {
+  rows.slice(0, 100).forEach((item) => {
     const row = element("div", "activity-row");
     row.append(element("span", "time mono", item.time || "--:--:--"));
     row.append(element("span", "call-badge", String(item.call || "?").slice(0, 1)));

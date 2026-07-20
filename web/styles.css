@@ -71,6 +71,7 @@ main { min-height: 100vh; overflow: hidden; }
 .search { width: 196px; height: 36px; padding: 0 12px; display: flex; align-items: center; gap: 7px; border: 1px solid var(--line); background: #f5f4ef; }
 .search span { color: var(--muted); font-size: 19px; line-height: 1; transform: rotate(-15deg); }
 .search input { width: 100%; border: 0; outline: none; background: transparent; font-size: 11px; color: var(--ink); }
+.activity-list { max-height: 730px; overflow-y: auto; scrollbar-gutter: stable; }
 .activity-row { min-height: 73px; padding: 0 28px; display: grid; grid-template-columns: 75px 37px 1fr 1fr 54px; gap: 14px; align-items: center; border-bottom: 1px solid #e6e4dc; }
 .activity-row:last-child { border-bottom: 0; }
 .time, .duration { font-size: 10px; color: var(--muted); }.duration { text-align: right; color: var(--ink); }
@@ -83,8 +84,7 @@ main { min-height: 100vh; overflow: hidden; }
 .text-button:hover { background: #f1f2e7; }
 .empty-state { height: 438px; display: grid; place-items: center; color: var(--muted); font-family: Georgia, serif; font-size: 16px; }
 .empty-state.compact { height: 276px; }
-.static-label { cursor: default; }
-.static-label:hover { background: transparent; }
+.nodes-panel { align-self: start; }
 .node-count { padding: 7px 9px; border-radius: 2px; background: #e8edda; color: #60712f; font-size: 8px; font-weight: 800; letter-spacing: .1em; }
 .node-row { min-height: 92px; padding: 0 28px; display: grid; grid-template-columns: 38px 1fr 76px 45px; gap: 13px; align-items: center; border-bottom: 1px solid #e6e4dc; }
 .tower { width: 33px; height: 33px; position: relative; border-radius: 50%; background: #e9eadf; }

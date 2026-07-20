@@ -131,6 +131,25 @@ class CollectorTests(unittest.TestCase):
         self.assertEqual(snapshot["stats"]["keyupsToday"], 1)
         self.assertGreater(snapshot["utilization"][0], 0)
 
+    def test_recent_activity_is_limited_to_newest_100_entries(self) -> None:
+        state = ReflectorState()
+        now = datetime.now(timezone.utc)
+        config = settings(Path("/tmp/status.json"))
+
+        for index in range(105):
+            timestamp = now.timestamp() + index * 2
+            state.process_line(
+                f"M: {now:%Y-%m-%d} 12:00:00 Transmission from WD6AWP at WD6AWP to TG 10253",
+                timestamp,
+            )
+            state.process_line(
+                f"M: {now:%Y-%m-%d} 12:00:01 Received end of transmission",
+                timestamp + 1,
+            )
+
+        snapshot = state.snapshot(config, now.timestamp() + 300)
+        self.assertEqual(len(snapshot["activity"]), 100)
+
     def test_publishes_complete_json_atomically(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "status.json"

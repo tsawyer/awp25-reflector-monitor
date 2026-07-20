@@ -73,7 +73,7 @@ class NodeSeen:
 class ReflectorState:
     def __init__(self, node_metadata: dict[str, dict[str, Any]] | None = None) -> None:
         self.node_metadata = node_metadata or {}
-        self.activity: deque[dict[str, Any]] = deque(maxlen=50)
+        self.activity: deque[dict[str, Any]] = deque(maxlen=100)
         self.nodes: dict[str, NodeSeen] = {}
         self.active_call: dict[str, Any] | None = None
         self.active_started: float | None = None
