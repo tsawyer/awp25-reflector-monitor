@@ -16,7 +16,6 @@ def settings(output: Path) -> Settings:
         nodes_file=None,
         reflector_name="AWP25",
         talkgroup="10225",
-        nac="927",
         poll_interval=0.1,
         publish_interval=1.0,
         online_timeout=300.0,

@@ -135,7 +135,6 @@ function render(status) {
   setText("updated-label", status.configured === false ? "Check collector configuration" : formatUpdated(status.updatedAt));
   setText("heartbeat-label", online ? "Live heartbeat" : "Heartbeat stale");
   setText("talkgroup", status.talkgroup || "—");
-  setText("nac", status.nac || "—");
 
   const call = status.activeCall;
   setText("active-avatar", call?.call?.slice(0, 1) || "A");

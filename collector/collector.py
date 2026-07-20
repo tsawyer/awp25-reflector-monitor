@@ -209,7 +209,6 @@ class ReflectorState:
             "updatedAt": iso_now(),
             "reflectorName": settings.reflector_name,
             "talkgroup": settings.talkgroup,
-            "nac": settings.nac,
             "activeCall": active,
             "activity": list(self.activity),
             "nodes": nodes,
@@ -231,7 +230,6 @@ class Settings:
     nodes_file: Path | None
     reflector_name: str
     talkgroup: str
-    nac: str
     poll_interval: float
     publish_interval: float
     online_timeout: float
@@ -249,7 +247,6 @@ class Settings:
             nodes_file=Path(nodes) if nodes else None,
             reflector_name=os.environ.get("P25_REFLECTOR_NAME", "AWP25"),
             talkgroup=os.environ.get("P25_TALKGROUP", "10225"),
-            nac=os.environ.get("P25_NAC", "927"),
             poll_interval=float(os.environ.get("P25_POLL_INTERVAL", "0.2")),
             publish_interval=float(os.environ.get("P25_PUBLISH_INTERVAL", "1.0")),
             online_timeout=float(os.environ.get("P25_ONLINE_TIMEOUT", "300")),
